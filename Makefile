@@ -17,7 +17,7 @@ SHELLCHECK_IMAGE?="koalaman/shellcheck:v0.4.6"
 TEST_CONTAINER_NAME?="test_hlds_auto"
 TEST_CONTAINER_PORT?="27111"
 HLDS_NAME?="Test auto"
-HLDS_MAP?="de_dust2"
+HLDS_MAP?="ahl_bananamans"
 
 .PHONY: build
 build:
