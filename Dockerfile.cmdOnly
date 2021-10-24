@@ -2,65 +2,76 @@ FROM debian:jessie
 
 LABEL maintainer "James Moverley <jmoverley@ladnet.com>"
 
+# Steam params
+ARG steam_url="https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
 ARG steam_user=anonymous
 ARG steam_password=
 ARG steam_dir=/opt/steam
+
+# HLDS install bits
 ARG hlds_dir=/opt/hlds
-ARG hlds_mod_dir=/opt/steam
+
+# AHL download URLs
+ARG ahl_base_url="http://192.168.2.17/ahl/AHL_DC_RC2_linux.tgz"
+ARG ahl_hotfix_url="http://192.168.2.17/ahl/ahldc-rc2-hf1a.tgz"
+ARG ahl_dir=${hlds_dir}/action
 
 #ARG metamod_version=1.20
+#ARG metamod_url="http://prdownloads.sourceforge.net/metamod/metamod-$metamod_version-linux.tar.gz?download"
+
 #ARG amxmod_version=1.8.2
+#ARG amx_base_url="http://www.amxmodx.org/release/amxmodx-$amxmod_version-base-linux.tar.gz"
 
 RUN apt update && apt install -y lib32gcc1 curl
 
 # Install SteamCMD
 RUN mkdir -p $steam_dir && cd $steam_dir && \
-    curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -
+    curl -sqL ${steam_url} | tar zxvf -
 
 # Install Steam + HLDS
-RUN mkdir -p /opt/hlds
+RUN mkdir -p ${hlds_dir}
 # Workaround for "app_update 90" bug, see https://forums.alliedmods.net/showthread.php?p=2518786
 RUN ${steam_dir}/steamcmd.sh +login $steam_user $steam_password +force_install_dir ${hlds_dir} +app_update 90 validate +quit || \
   ${steam_dir}/steamcmd.sh +login $steam_user $steam_password +force_install_dir ${hlds_dir} +app_update 90 validate +quit 
-RUN ${steam_dir}/steamcmd.sh +login $steam_user $steam_password +force_install_dir ${hlds_dir} +app_update 70 validate +quit || :
-RUN mkdir -p ~/.steam && ln -s /opt/hlds ~/.steam/sdk32
+#RUN ${steam_dir}/steamcmd.sh +login $steam_user $steam_password +force_install_dir ${hlds_dir} +app_update 70 validate +quit 
+RUN mkdir -p ~/.steam && ln -s ${hlds_dir} ~/.steam/sdk32
 RUN ln -s ${steam_dir} ${hlds_dir}/steamcmd
 ADD files/steam_appid.txt ${hlds_dir}/steam_appid.txt
 # add in entrypoint script
 ADD hlds_run.sh /bin/hlds_run.sh
 
-# dowbload ahl parts
+# dowbload / extract AHL into hlds
+RUN cd ${hlds_dir} && curl -sqL ${ahl_base_url} | tar zxvf -
+# Apply AHL hotfix
+RUN cd ${ahl_dir}/dlls && curl -sqL ${ahl_hotfix_url} | tar zxvf -
 
-#extract ahl main
-
-# setup hotfix
-
+# setup hotfix for ahl:dc-rc2 h1a
+RUN cd ${ahl_dir}/dlls && mv ahldc-rc2-hotfix1a/ahl_i386-dhc2h1a.so ahl_i386.so
 
 ###################
 ## Setup SERVER
 # Add default config
-#ADD files/server.cfg /opt/hlds/cstrike/server.cfg
+#ADD files/server.cfg ${ahl_dir}/server.cfg
 
 ## Add maps
-#ADD maps/* /opt/hlds/cstrike/maps/
-#ADD files/mapcycle.txt /opt/hlds/cstrike/mapcycle.txt
+#ADD maps/* ${ahl_dir}/maps/
+#ADD files/mapcycle.txt ${ahl_dir}/mapcycle.txt
 
 # # Install metamod
 # RUN mkdir -p /opt/hlds/cstrike/addons/metamod/dlls
-# RUN curl -sqL "http://prdownloads.sourceforge.net/metamod/metamod-$metamod_version-linux.tar.gz?download" | tar -C /opt/hlds/cstrike/addons/metamod/dlls -zxvf -
-# ADD files/liblist.gam /opt/hlds/cstrike/liblist.gam
+# RUN curl -sqL ${metamod_url} | tar -C ${ahl_dir}/addons/metamod/dlls -zxvf -
+# ADD files/liblist.gam ${ahl_dir}/liblist.gam
 # # Remove this line if you aren't going to install/use amxmodx and dproto
-# ADD files/plugins.ini /opt/hlds/cstrike/addons/metamod/plugins.ini
+# ADD files/plugins.ini ${ahl_dir}/addons/metamod/plugins.ini
 
 # # Install dproto
-# RUN mkdir -p /opt/hlds/cstrike/addons/dproto
-# ADD files/dproto_i386.so /opt/hlds/cstrike/addons/dproto/dproto_i386.so
-# ADD files/dproto.cfg /opt/hlds/cstrike/dproto.cfg
+# RUN mkdir -p ${ahl_dir}/addons/dproto
+# ADD files/dproto_i386.so ${ahl_dir}/addons/dproto/dproto_i386.so
+# ADD files/dproto.cfg ${ahl_dir}/dproto.cfg
 
 # # Install AMX mod X
-# RUN curl -sqL "http://www.amxmodx.org/release/amxmodx-$amxmod_version-base-linux.tar.gz" | tar -C /opt/hlds/cstrike/ -zxvf -
-# RUN curl -sqL "http://www.amxmodx.org/release/amxmodx-$amxmod_version-cstrike-linux.tar.gz" | tar -C /opt/hlds/cstrike/ -zxvf -
-# ADD files/maps.ini /opt/hlds/cstrike/addons/amxmodx/configs/maps.ini
+# RUN curl -sqL ${amx_base_url} | tar -C ${ahl_dir} -zxvf -
+# ADD files/maps.ini ${ahl_dir}/addons/amxmodx/configs/maps.ini
 
 # Cleanup
 RUN apt remove -y curl

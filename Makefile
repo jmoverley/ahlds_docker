@@ -1,6 +1,6 @@
 
 # Build options
-IMAGE_NAME?="hlds"
+IMAGE_NAME?="ahlds"
 IMAGE_TAG?="alpha"
 
 STEAM_USER?="anonymous"
