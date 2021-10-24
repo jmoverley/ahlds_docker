@@ -21,7 +21,7 @@ HLDS_MAP?="ahl_bananamans"
 
 .PHONY: build
 build:
-	docker build -f Dockerfile --no-cache=$(DOCKER_NO_CACHE) \
+	docker build -f Dockerfile.cmdOnly --no-cache=$(DOCKER_NO_CACHE) \
 	-t $(IMAGE_NAME):$(IMAGE_TAG) \
 	--build-arg steam_user=$(STEAM_USER) \
 	--build-arg steam_password=$(STEAM_PASSWORD) .
