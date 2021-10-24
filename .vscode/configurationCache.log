@@ -1,1 +1,1 @@
-{"buildTargets":["build","clean","publish","shellcheck","test","test-clean","test-smoke","test-start-server","test-stop-server","all"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
+{"buildTargets":["all","build","clean","publish","shellcheck","test","test-clean","test-smoke","test-start-server","test-stop-server"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}

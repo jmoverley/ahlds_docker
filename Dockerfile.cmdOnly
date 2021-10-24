@@ -46,7 +46,8 @@ RUN cd ${hlds_dir} && curl -sqL ${ahl_base_url} | tar zxvf -
 RUN cd ${ahl_dir}/dlls && curl -sqL ${ahl_hotfix_url} | tar zxvf -
 
 # setup hotfix for ahl:dc-rc2 h1a
-RUN cd ${ahl_dir}/dlls && mv ahldc-rc2-hotfix1a/ahl_i386-dhc2h1a.so ahl_i386.so
+#RUN cd ${ahl_dir}/dlls && mv ahldc-rc2-hotfix1a/ahl_i386-dhc2h1a.so ahl_i386.so
+RUN cd ${ahl_dir}/dlls && mv ahldc-rc2-hotfix1a/ahl_i386-dhc2h1a.so ahl.so
 
 ###################
 ## Setup SERVER
@@ -77,5 +78,10 @@ RUN cd ${ahl_dir}/dlls && mv ahldc-rc2-hotfix1a/ahl_i386-dhc2h1a.so ahl_i386.so
 RUN apt remove -y curl
 
 WORKDIR ${hlds_dir}
+
+EXPOSE 27015/udp
+EXPOSE 27015/tcp
+EXPOSE 27020/udp
+EXPOSE 26900/udp
 
 ENTRYPOINT ["/bin/hlds_run.sh"]
